@@ -13,14 +13,14 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import com.security.jwtsecurity.service.UserService;
+import com.security.jwtsecurity.service.CustomUserDetailService;
 
 @Configuration
 @EnableWebSecurity
 public class SpringConfig extends WebSecurityConfigurerAdapter{
 
 	@Autowired
-	private UserService userService;
+	private CustomUserDetailService userService;
 	
 	@Autowired
 	private JwtAuthenticationEntryPoint entryPoint; 
@@ -33,7 +33,7 @@ public class SpringConfig extends WebSecurityConfigurerAdapter{
 		System.out.println("configure auth");
 		DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
 		provider.setUserDetailsService(userService);
-		provider.setPasswordEncoder(new BCryptPasswordEncoder());
+		provider.setPasswordEncoder(bCryptPasswordEncoder());
 		auth.authenticationProvider(provider);
 	}
 
@@ -47,7 +47,7 @@ public class SpringConfig extends WebSecurityConfigurerAdapter{
 		.hasAuthority("ADMIN")
 		.antMatchers("/user")
 		.hasAnyAuthority("ADMIN", "USER")
-		.antMatchers("/authenticate")
+		.antMatchers("/authenticate", "/register")
 		.permitAll()
 		.anyRequest()
 		.authenticated()
@@ -68,4 +68,9 @@ public class SpringConfig extends WebSecurityConfigurerAdapter{
 	public AuthenticationManager authenticationManagerBean() throws Exception {
 		return super.authenticationManagerBean();
 	}	
+	
+	@Bean
+	BCryptPasswordEncoder bCryptPasswordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
 }

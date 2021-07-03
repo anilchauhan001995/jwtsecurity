@@ -9,10 +9,13 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.security.jwtsecurity.model.AuthenticationRequest;
 import com.security.jwtsecurity.model.AuthenticationResponse;
+import com.security.jwtsecurity.model.UserRegisterRequest;
+import com.security.jwtsecurity.service.CustomUserDetailService;
 import com.security.jwtsecurity.service.UserService;
 import com.security.jwtsecurity.util.Jwtutil;
 
@@ -21,6 +24,9 @@ public class AuthenticationController {
 	
 	@Autowired
 	private AuthenticationManager authManager;
+	
+	@Autowired
+	private CustomUserDetailService customUserDetailService;
 	
 	@Autowired
 	private UserService userService;
@@ -38,8 +44,16 @@ public class AuthenticationController {
 		} catch (BadCredentialsException e) {
 			throw new Exception("INVALID_CREDENTIALS", e);
 		}
-		UserDetails userDetails = userService.loadUserByUsername(authRequest.getUsername());
+		UserDetails userDetails = customUserDetailService.loadUserByUsername(authRequest.getUsername());
 		final String token = jwtUtil.generateToken(userDetails);
 		return ResponseEntity.ok(new AuthenticationResponse(token));
+	}
+	
+	@PostMapping("/register")
+	public ResponseEntity<?> register(@RequestBody UserRegisterRequest request) {
+		if (userService.save(request) != null ) {
+			return  ResponseEntity.ok("Success");
+		}
+		return null;
 	}
 }
